@@ -1,13 +1,17 @@
 import { motion } from 'framer-motion'
+import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
+import { formatNumberWithCommas } from '@/utils/formatNumber'
 
 interface TopBarProps {
   selectedCount: number
+  totalMatches: number
+  isLoading: boolean
   onOpenMobileBetTicket: () => void
 }
 
-export const TopBar = ({ selectedCount, onOpenMobileBetTicket }: TopBarProps) => {
+export const TopBar = ({ selectedCount, totalMatches, isLoading, onOpenMobileBetTicket }: TopBarProps) => {
   return (
     <header className="mb-2 flex items-center justify-between rounded-lg border border-[#30363d] bg-[#161b22] px-4 py-2">
       <div>
@@ -17,7 +21,7 @@ export const TopBar = ({ selectedCount, onOpenMobileBetTicket }: TopBarProps) =>
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
         >
-          Crypto Sportsbook
+          Crypto SportsBook
         </motion.p>
         <motion.h1
           className="text-[15px] font-bold uppercase tracking-[0.06em] text-[#f7c948] md:text-[18px]"
@@ -38,11 +42,22 @@ export const TopBar = ({ selectedCount, onOpenMobileBetTicket }: TopBarProps) =>
           🎟️ Bets
         </Button>
         <Chip tone="neutral" className="px-3 py-1 text-[12px]">
-          12,000 Matches
+          {isLoading ? (
+            <>
+              <LoadingSpinner size="sm" className="h-3 w-3 border-[1.5px]" />
+              Loading matches
+            </>
+          ) : (
+            `${formatNumberWithCommas(totalMatches, 0)} Matches`
+          )}
         </Chip>
         <div className="hidden md:block">
-          <Chip tone="gold" className="px-3 py-1 text-[12px]">
-            {selectedCount} Selected
+          <Chip tone="gold" className="border-[#f7c948]/70 bg-[#f7c948]/25 px-3 py-1 text-[12px]">
+            {isLoading ? (
+              <LoadingSpinner size="sm" className="h-3 w-3 border-[1.5px]" />
+            ) : (
+              `${selectedCount} Selected`
+            )}
           </Chip>
         </div>
       </div>

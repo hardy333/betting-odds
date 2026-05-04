@@ -17,11 +17,11 @@ const sizeClassMap: Record<ButtonSize, string> = {
 
 const variantClassMap: Record<ButtonVariant, string> = {
   primary:
-    'border border-transparent bg-[#f5820f] text-[#111827] hover:brightness-110 active:translate-y-px active:brightness-95 focus-visible:ring-[#f7c948]',
+    'border border-transparent bg-[var(--accent-orange)] text-[var(--bg-app)] hover:brightness-110 active:translate-y-px active:brightness-95 focus-visible:ring-[var(--accent-gold)]',
   surface:
-    'border border-[#30363d] bg-[#1c2330] text-[#f7c948] hover:border-[#f7c948] hover:bg-[#252d3d] active:translate-y-px active:bg-[#1a2230] focus-visible:ring-[#f7c948]',
+    'border border-[var(--border)] bg-[var(--card)] text-[var(--accent-gold)] hover:border-[var(--accent-gold)] hover:brightness-110 active:translate-y-px active:bg-[var(--panel)] focus-visible:ring-[var(--accent-gold)]',
   outline:
-    'border border-[#f5820f] bg-transparent text-[#f5820f] hover:bg-[#f5820f]/12 hover:text-[#ffb15b] active:translate-y-px active:bg-[#f5820f]/20 focus-visible:ring-[#f5820f]',
+    'border border-[var(--accent-orange)] bg-transparent text-[var(--accent-orange)] hover:bg-[var(--accent-orange)]/12 hover:brightness-110 active:translate-y-px active:bg-[var(--accent-orange)]/20 focus-visible:ring-[var(--accent-orange)]',
 }
 
 export const Button = ({

@@ -9,9 +9,9 @@ interface ChipProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const toneClassMap: Record<ChipTone, string> = {
-  gold: 'border border-[#f7c948] bg-[#2a230f] text-[#f7c948]',
-  live: 'bg-[#0b2d18] text-[#00c853]',
-  neutral: 'border border-[#30363d] bg-[#1c2330] text-[#9ca3af]',
+  gold: 'border border-[var(--accent-gold)] bg-[var(--card)] text-[var(--accent-gold)]',
+  live: 'border border-[var(--state-up)] bg-transparent text-[var(--state-up)]',
+  neutral: 'border border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)]',
 }
 
 export const Chip = ({
@@ -27,7 +27,7 @@ export const Chip = ({
       {...rest}
     >
       {withPulseDot ? (
-        <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-[#00c853]" aria-hidden />
+        <span className="live-dot inline-block h-1.5 w-1.5 rounded-full bg-(--state-up)" aria-hidden />
       ) : null}
       {children}
     </span>

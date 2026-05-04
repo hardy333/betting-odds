@@ -1,9 +1,8 @@
+import { ODDS_COLUMN_LABELS, ODDS_GROUP_START_LABELS } from '@/components/board/oddsBoardColumns'
 import { Tooltip } from '@/components/ui/Tooltip'
 import type { OutcomeId } from '@/types/odds'
 
 const LEFT_COLUMN_LABELS = ['Sport', 'Match', 'Start', 'Score', 'Status']
-const ODDS_COLUMN_LABELS: OutcomeId[] = ['1', 'X', '2', '1X', '12', 'X2', 'O2.5', 'U2.5']
-const ODDS_GROUP_START_LABELS = new Set<OutcomeId>(['1X', 'O2.5'])
 const BET_TOOLTIP_BY_LABEL: Record<OutcomeId, string> = {
   '1': 'Home win in regular time.',
   X: 'Draw in regular time.',

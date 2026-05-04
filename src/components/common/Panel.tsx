@@ -9,10 +9,10 @@ interface PanelProps extends HTMLAttributes<HTMLElement> {
 }
 
 const toneClassMap: Record<PanelTone, string> = {
-  panel: 'rounded-lg border border-[#30363d] bg-[#161b22]',
-  card: 'rounded-md border border-[#30363d] bg-[#1c2330]',
-  subtle: 'rounded-md bg-[#111722]',
-  dashed: 'rounded-md border border-dashed border-[#30363d] bg-[#1c2330]',
+  panel: 'rounded-lg border border-[var(--border)] bg-[var(--panel)]',
+  card: 'rounded-md border border-[var(--border)] bg-[var(--card)]',
+  subtle: 'rounded-md bg-[var(--bg-app)]',
+  dashed: 'rounded-md border border-dashed border-[var(--border)] bg-[var(--card)]',
 }
 
 export const Panel = ({

@@ -5,7 +5,7 @@ import { StatRow } from '@/components/common/StatRow'
 import { Panel } from '@/components/common/Panel'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
-import type { OddsDirection } from '@/types/odds'
+import type { BetTicketItem } from '@/hooks/odds-board/useBetTicketItems'
 import { formatNumberWithCommas } from '@/utils/formatNumber'
 
 const ticketListVariants = {
@@ -32,17 +32,8 @@ const ticketItemVariants = {
   },
 } satisfies Variants
 
-interface BetTickerSidebarItem {
-  id: string
-  matchLabel: string
-  marketLabel: string
-  outcomeLabel: string
-  odds: number
-  flashDirection: OddsDirection | null
-}
-
 interface BetTickerSidebarProps {
-  items: BetTickerSidebarItem[]
+  items: BetTicketItem[]
   collapsed: boolean
   onToggleCollapse: () => void
   onRemoveItem: (id: string) => void
@@ -64,9 +55,8 @@ export const BetTickerSidebar = ({
   return (
     <Panel as="aside" tone="panel" className="flex h-full w-full flex-col">
       <div
-        className={`flex items-center gap-2 border-b border-[#30363d] ${
-          isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
-        }`}
+        className={`flex items-center gap-2 border-b border-[#30363d] ${isCollapsed ? 'justify-center p-2' : 'justify-between p-3'
+          }`}
       >
         {floating ? (
           <>
@@ -93,9 +83,8 @@ export const BetTickerSidebar = ({
               title={isCollapsed ? 'Expand bet ticket' : 'Collapse bet ticket'}
             >
               <ChevronRight
-                className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${
-                  isCollapsed ? 'rotate-180' : 'rotate-0'
-                }`}
+                className={`h-3.5 w-3.5 transition-transform duration-300 ease-in-out ${isCollapsed ? 'rotate-180' : 'rotate-0'
+                  }`}
                 aria-hidden
               />
             </Button>
@@ -201,7 +190,7 @@ export const BetTickerSidebar = ({
                 </motion.div>
               )}
             </div>
-            <footer className="space-y-2 border-t border-[#30363d] p-3">
+            <footer className="relative z-50 space-y-2 border-t border-[#30363d] p-3">
               <StatRow label="Selections" value={items.length} />
               <StatRow
                 label="Total Odds"

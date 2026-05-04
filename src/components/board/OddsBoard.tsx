@@ -5,8 +5,8 @@ import { MatchRow } from '@/components/board/MatchRow'
 import { OddsBoardHeader } from '@/components/board/OddsBoardHeader'
 import { Panel } from '@/components/common/Panel'
 import { appConfig } from '@/config/appConfig'
-import { useMediaQuery } from '@/hooks/useMediaQuery'
-import { usePersistentScroll } from '@/hooks/usePersistentScroll'
+import { useMediaQuery } from '@/hooks/utils/useMediaQuery'
+import { usePersistentScroll } from '@/hooks/utils/usePersistentScroll'
 import type { Match, OddsDirection, OutcomeGroupId, OutcomeId } from '@/types/odds'
 
 interface OddsBoardProps {

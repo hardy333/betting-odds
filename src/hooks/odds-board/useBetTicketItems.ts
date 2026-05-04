@@ -35,7 +35,9 @@ export const useBetTicketItems = ({
     return selectedEntries
       .map(([key, selected]) => {
         const match = matches.find((item) => item.id === selected.matchId)
-        const outcome = match?.outcomes.find((item) => item.outcomeId === selected.outcomeId)
+        const outcome = match?.outcomes.find(
+          (item) => item.groupId === selected.groupId && item.outcomeId === selected.outcomeId,
+        )
         if (!match || !outcome) return null
 
         return {

@@ -1,7 +1,8 @@
-import type { CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 
 import { LiveChip } from '@/components/board/LiveChip'
 import { OddsButton } from '@/components/board/OddsButton'
+import { ODDS_GROUP_START_LABELS } from '@/components/board/oddsBoardColumns'
 import { Panel } from '@/components/common/Panel'
 import type { Match, OddsDirection, OutcomeGroupId, OutcomeId } from '@/types/odds'
 
@@ -21,9 +22,7 @@ const formatTime = (iso: string) =>
     minute: '2-digit',
   })
 
-const ODDS_GROUP_START_LABELS = new Set(['1X', 'O2.5'])
-
-export const MatchRow = ({
+const MatchRowComponent = ({
   match,
   style,
   selectedKeys,
@@ -139,3 +138,5 @@ export const MatchRow = ({
     </div>
   )
 }
+
+export const MatchRow = memo(MatchRowComponent)

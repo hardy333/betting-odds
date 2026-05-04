@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import type { OddsDirection } from '@/types/odds'
 
 interface OddsButtonProps {
@@ -9,24 +11,34 @@ interface OddsButtonProps {
   className?: string
 }
 
-export const OddsButton = ({ label, odds, selected, flashDirection, onClick, className }: OddsButtonProps) => {
-  const flashOddsClass = flashDirection === null ? 'text-[#f3f4f6]' : ''
+const OddsButtonComponent = ({ label, odds, selected, flashDirection, onClick, className }: OddsButtonProps) => {
+  const flashOddsClass = flashDirection === null ? 'text-[var(--text-primary)]' : ''
   const borderColor =
-    flashDirection === 'up' ? '#00c853' : flashDirection === 'down' ? '#ef4444' : selected ? '#f7c948' : '#30363d'
+    flashDirection === 'up'
+      ? 'var(--state-up)'
+      : flashDirection === 'down'
+        ? 'var(--state-down)'
+        : selected
+          ? 'var(--accent-gold)'
+          : 'var(--border)'
   const oddsColor =
-    flashDirection === 'up' ? '#00c853' : flashDirection === 'down' ? '#ef4444' : '#f3f4f6'
+    flashDirection === 'up'
+      ? 'var(--state-up)'
+      : flashDirection === 'down'
+        ? 'var(--state-down)'
+        : 'var(--text-primary)'
 
   const selectedClass = selected
-    ? 'bg-[#4a3a12] text-[#f7c948]'
-    : 'bg-[#1c2330] text-[#f7c948]'
+    ? 'bg-[#f7c948]/20 text-[var(--accent-gold)]'
+    : 'bg-[var(--card)] text-[var(--accent-gold)]'
   const hoverClass = selected
-    ? 'hover:bg-[#5a4918]'
-    : 'hover:bg-[#2b3444] hover:text-[#f7c948]'
+    ? 'hover:brightness-110'
+    : 'hover:bg-[var(--panel)] hover:text-[var(--accent-gold)]'
   const buttonNode = (
     <button
       type="button"
       onClick={onClick}
-      className={`font-odds w-[58px] rounded-md border px-2 py-1 text-[13px] font-semibold transition-transform duration-150 ease-out active:scale-[0.98] ${hoverClass} hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f7c948] ${selectedClass} ${className ?? ''}`}
+      className={`font-odds w-[58px] rounded-md border px-2 py-1 text-[13px] font-semibold transition-transform duration-150 ease-out active:scale-[0.98] ${hoverClass} hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-gold) ${selectedClass} ${className ?? ''}`}
       style={{ borderColor }}
       aria-pressed={selected}
       aria-label={`${label} odds ${odds.toFixed(2)}${flashDirection ? `, moving ${flashDirection}` : ''}`}
@@ -40,3 +52,5 @@ export const OddsButton = ({ label, odds, selected, flashDirection, onClick, cla
 
   return buttonNode
 }
+
+export const OddsButton = memo(OddsButtonComponent)

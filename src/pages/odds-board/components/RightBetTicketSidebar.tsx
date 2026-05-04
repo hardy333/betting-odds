@@ -1,22 +1,15 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { BetTickerSidebar } from '@/pages/odds-board/components/BetTickerSidebar'
+import { BetTickerSidebarLoading } from '@/pages/odds-board/components/BetTickerSidebarLoading'
 
 import { appConfig } from '@/config/appConfig'
+import type { BetTicketItem } from '@/hooks/odds-board/useBetTicketItems'
 import { useBetTicketUiStore } from '@/stores/useBetTicketUiStore'
-import type { OddsDirection } from '@/types/odds'
-
-interface BetTicketItem {
-  id: string
-  matchLabel: string
-  marketLabel: string
-  outcomeLabel: string
-  odds: number
-  flashDirection: OddsDirection | null
-}
 
 interface RightBetTicketSidebarProps {
   items: BetTicketItem[]
+  isLoading?: boolean
   onRemoveItem: (id: string) => void
   onClearAll: () => void
   isMobileBetTicketOpen: boolean
@@ -25,18 +18,21 @@ interface RightBetTicketSidebarProps {
 
 export const RightBetTicketSidebar = ({
   items,
+  isLoading = false,
   onRemoveItem,
   onClearAll,
   isMobileBetTicketOpen,
   onMobileBetTicketOpenChange,
 }: RightBetTicketSidebarProps) => {
-  const { isBetTicketCollapsed, toggleBetTicketCollapsed } = useBetTicketUiStore()
+  const isBetTicketCollapsed = useBetTicketUiStore((state) => state.isBetTicketCollapsed)
+  const toggleBetTicketCollapsed = useBetTicketUiStore((state) => state.toggleBetTicketCollapsed)
+  const desktopMinWidthPx = appConfig.viewport.mobileMaxWidthPx + 1
   const sidebarWidth = isBetTicketCollapsed
     ? appConfig.sidebar.collapsedWidthPx
     : appConfig.sidebar.expandedWidthPx
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 768px)')
+    const mediaQuery = window.matchMedia(`(min-width: ${desktopMinWidthPx}px)`)
     const handleDesktopMode = (event: MediaQueryListEvent) => {
       if (event.matches) {
         onMobileBetTicketOpenChange(false)
@@ -47,7 +43,7 @@ export const RightBetTicketSidebar = ({
     return () => {
       mediaQuery.removeEventListener('change', handleDesktopMode)
     }
-  }, [onMobileBetTicketOpenChange])
+  }, [desktopMinWidthPx, onMobileBetTicketOpenChange])
 
   return (
     <>
@@ -59,13 +55,17 @@ export const RightBetTicketSidebar = ({
           height: `calc(100dvh - ${appConfig.sidebar.topHeaderHeightRem}rem - (2 * ${appConfig.sidebar.gapRem}rem) - ${appConfig.sidebar.safetyOffsetRem}rem)`,
         }}
       >
-        <BetTickerSidebar
-          items={items}
-          collapsed={isBetTicketCollapsed}
-          onToggleCollapse={toggleBetTicketCollapsed}
-          onRemoveItem={onRemoveItem}
-          onClearAll={onClearAll}
-        />
+        {isLoading ? (
+          <BetTickerSidebarLoading />
+        ) : (
+          <BetTickerSidebar
+            items={items}
+            collapsed={isBetTicketCollapsed}
+            onToggleCollapse={toggleBetTicketCollapsed}
+            onRemoveItem={onRemoveItem}
+            onClearAll={onClearAll}
+          />
+        )}
       </div>
 
       <AnimatePresence>
@@ -88,14 +88,18 @@ export const RightBetTicketSidebar = ({
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
             >
-              <BetTickerSidebar
-                items={items}
-                collapsed={false}
-                onToggleCollapse={() => onMobileBetTicketOpenChange(false)}
-                onRemoveItem={onRemoveItem}
-                onClearAll={onClearAll}
-                floating
-              />
+              {isLoading ? (
+                <BetTickerSidebarLoading floating />
+              ) : (
+                <BetTickerSidebar
+                  items={items}
+                  collapsed={false}
+                  onToggleCollapse={() => onMobileBetTicketOpenChange(false)}
+                  onRemoveItem={onRemoveItem}
+                  onClearAll={onClearAll}
+                  floating
+                />
+              )}
             </motion.div>
           </>
         )}

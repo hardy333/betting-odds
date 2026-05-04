@@ -1,0 +1,6 @@
+export { default as HomePage } from '@/pages/home/HomePage'
+export { OddsBoardPage } from '@/pages/odds-board/OddsBoardPage'
+export { BetTickerSidebar } from '@/pages/odds-board/components/BetTickerSidebar'
+export { BetTickerSidebarLoading } from '@/pages/odds-board/components/BetTickerSidebarLoading'
+export { RightBetTicketSidebar } from '@/pages/odds-board/components/RightBetTicketSidebar'
+export { TopBar } from '@/pages/odds-board/components/TopBar'
