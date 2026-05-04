@@ -1,4 +1,4 @@
-import type { Market, Match, SportType } from '@/types/odds'
+import type { Match, Outcome, SportType } from '@/types/odds'
 
 const SPORTS: Array<{ sport: SportType; icon: string }> = [
   { sport: 'football', icon: '⚽' },
@@ -65,37 +65,80 @@ const makeTeamName = (rand: () => number) => {
 const makeOdds = (rand: () => number, min = 1.2, max = 6.8) =>
   Number(clamp(randomRange(rand, min, max), min, max).toFixed(2))
 
-const createMarkets = (matchId: string, rand: () => number): Market[] => [
-  {
-    id: `${matchId}:1x2`,
-    type: '1X2',
-    label: '1X2',
-    outcomes: [
-      { id: `${matchId}:1x2:home`, label: '1', odds: makeOdds(rand, 1.4, 4.2) },
-      { id: `${matchId}:1x2:draw`, label: 'X', odds: makeOdds(rand, 2.4, 4.8) },
-      { id: `${matchId}:1x2:away`, label: '2', odds: makeOdds(rand, 1.4, 4.2) },
-    ],
-  },
-  {
-    id: `${matchId}:double`,
-    type: 'DOUBLE_CHANCE',
-    label: 'Double Chance',
-    outcomes: [
-      { id: `${matchId}:double:1x`, label: '1X', odds: makeOdds(rand, 1.08, 2.4) },
-      { id: `${matchId}:double:12`, label: '12', odds: makeOdds(rand, 1.08, 2.4) },
-      { id: `${matchId}:double:x2`, label: 'X2', odds: makeOdds(rand, 1.08, 2.4) },
-    ],
-  },
-  {
-    id: `${matchId}:total`,
-    type: 'TOTAL',
-    label: 'Total 2.5',
-    outcomes: [
-      { id: `${matchId}:total:over`, label: 'Over', odds: makeOdds(rand, 1.5, 3.0) },
-      { id: `${matchId}:total:under`, label: 'Under', odds: makeOdds(rand, 1.5, 3.0) },
-    ],
-  },
-]
+const TOTAL_GOALS_LINE = 2.5
+
+const poissonTailProbability = (lambda: number, minimumGoals: number) => {
+  if (minimumGoals <= 0) return 1
+  if (lambda <= 0) return 0
+
+  let probability = Math.exp(-lambda)
+  let cumulative = probability
+
+  for (let k = 1; k < minimumGoals; k += 1) {
+    probability = (probability * lambda) / k
+    cumulative += probability
+  }
+
+  return clamp(1 - cumulative, 0, 1)
+}
+
+const totalOddsFromState = ({
+  rand,
+  totalGoalsScored,
+  isLive,
+  minute,
+}: {
+  rand: () => number
+  totalGoalsScored: number
+  isLive: boolean
+  minute: number
+}) => {
+  const fairFullTimeLambda = randomRange(rand, 2.1, 3.2)
+  const goalsNeededForOver = Math.floor(TOTAL_GOALS_LINE) + 1 - totalGoalsScored
+  let overProbability = 0
+
+  if (goalsNeededForOver <= 0) {
+    overProbability = 0.995
+  } else if (isLive) {
+    const remainingMinutes = clamp(90 - minute, 1, 90)
+    const remainingLambda = fairFullTimeLambda * (remainingMinutes / 90)
+    overProbability = poissonTailProbability(remainingLambda, goalsNeededForOver)
+  } else {
+    overProbability = poissonTailProbability(fairFullTimeLambda, goalsNeededForOver)
+  }
+
+  const clampedOverProbability = clamp(overProbability, 0.05, 0.95)
+  const underProbability = 1 - clampedOverProbability
+  const overround = randomRange(rand, 1.04, 1.1)
+
+  return {
+    overOdds: Number((1 / (clampedOverProbability * overround)).toFixed(2)),
+    underOdds: Number((1 / (underProbability * overround)).toFixed(2)),
+  }
+}
+
+const createOutcomes = (
+  rand: () => number,
+  context: { totalGoalsScored: number; isLive: boolean; minute: number },
+): Outcome[] => {
+  const { overOdds, underOdds } = totalOddsFromState({
+    rand,
+    totalGoalsScored: context.totalGoalsScored,
+    isLive: context.isLive,
+    minute: context.minute,
+  })
+
+  return [
+    { groupId: 'STANDARD', outcomeId: '1', odds: makeOdds(rand, 1.4, 4.2) },
+    { groupId: 'STANDARD', outcomeId: 'X', odds: makeOdds(rand, 2.4, 4.8) },
+    { groupId: 'STANDARD', outcomeId: '2', odds: makeOdds(rand, 1.4, 4.2) },
+    { groupId: 'DOUBLE_CHANCE', outcomeId: '1X', odds: makeOdds(rand, 1.08, 2.4) },
+    { groupId: 'DOUBLE_CHANCE', outcomeId: '12', odds: makeOdds(rand, 1.08, 2.4) },
+    { groupId: 'DOUBLE_CHANCE', outcomeId: 'X2', odds: makeOdds(rand, 1.08, 2.4) },
+    { groupId: 'TOTAL', outcomeId: 'O2.5', odds: overOdds },
+    { groupId: 'TOTAL', outcomeId: 'U2.5', odds: underOdds },
+  ]
+}
 
 export const generateMatches = (count: number, seed = 1001): Match[] => {
   const rand = mulberry32(seed)
@@ -109,6 +152,8 @@ export const generateMatches = (count: number, seed = 1001): Match[] => {
     const startOffsetMs = randomInt(rand, -70, 15) * 60_000
     const startTime = new Date(now + startOffsetMs).toISOString()
     const isLive = rand() < 0.65
+    const homeScore = isLive ? randomInt(rand, 0, 4) : 0
+    const awayScore = isLive ? randomInt(rand, 0, 4) : 0
 
     matches.push({
       id,
@@ -117,12 +162,16 @@ export const generateMatches = (count: number, seed = 1001): Match[] => {
       competitors: [makeTeamName(rand), makeTeamName(rand)],
       startTime,
       score: {
-        home: isLive ? randomInt(rand, 0, 4) : 0,
-        away: isLive ? randomInt(rand, 0, 4) : 0,
+        home: homeScore,
+        away: awayScore,
         minute: isLive ? minute : 0,
         status: isLive ? 'LIVE' : 'UPCOMING',
       },
-      markets: createMarkets(id, rand),
+      outcomes: createOutcomes(rand, {
+        totalGoalsScored: homeScore + awayScore,
+        isLive,
+        minute,
+      }),
     })
   }
 

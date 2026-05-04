@@ -1,22 +1,16 @@
 export type SportType = 'football' | 'basketball' | 'tennis' | 'esports' | 'hockey'
 
-export type MarketType = '1X2' | 'DOUBLE_CHANCE' | 'TOTAL'
+export type OutcomeGroupId = 'STANDARD' | 'DOUBLE_CHANCE' | 'TOTAL'
+export type OutcomeId = '1' | 'X' | '2' | '1X' | '12' | 'X2' | 'O2.5' | 'U2.5'
 
 export type MatchStatus = 'LIVE' | 'UPCOMING'
 
 export type OddsDirection = 'up' | 'down'
 
 export interface Outcome {
-  id: string
-  label: string
+  groupId: OutcomeGroupId
+  outcomeId: OutcomeId
   odds: number
-}
-
-export interface Market {
-  id: string
-  type: MarketType
-  label: string
-  outcomes: Outcome[]
 }
 
 export interface MatchScore {
@@ -33,20 +27,20 @@ export interface Match {
   competitors: [string, string]
   startTime: string
   score: MatchScore
-  markets: Market[]
+  outcomes: Outcome[]
 }
 
 export interface OddsUpdate {
   matchId: string
-  marketId: string
-  outcomeId: string
+  groupId: OutcomeGroupId
+  outcomeId: OutcomeId
   newOdds: number
 }
 
 export interface SelectedOdd {
   matchId: string
-  marketId: string
-  outcomeId: string
+  groupId: OutcomeGroupId
+  outcomeId: OutcomeId
 }
 
 export type SelectedOddMap = Record<string, SelectedOdd>

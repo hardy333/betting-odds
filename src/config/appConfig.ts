@@ -1,13 +1,16 @@
 export const appConfig = {
+  viewport: {
+    mobileMaxWidthPx: 767,
+  },
   oddsBoard: {
     rowHeightPx: 62,
-    overscanRows: 15,
+    overscanRows: 35,
     defaultTotalMatches: 12_000,
-    defaultSeed: 2026,
+    defaultMatchGenerationSeed: 2026,
   },
   socket: {
-    intervalMs: 4000,
-    updatesPerTick: 5000,
+    intervalMs: 1000,
+    updatesPerTick: 50,
   },
   flash: {
     durationMs: 3000,

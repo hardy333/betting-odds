@@ -1,6 +1,18 @@
+import { Tooltip } from '@/components/ui/Tooltip'
+
 const LEFT_COLUMN_LABELS = ['Sport', 'Match', 'Start', 'Score', 'Status']
-const ODDS_COLUMN_LABELS = ['1', 'X', '2', '1X', '12', 'X2', 'Over', 'Under']
-const ODDS_GROUP_START_LABELS = new Set(['1X', 'Over'])
+const ODDS_COLUMN_LABELS = ['1', 'X', '2', '1X', '12', 'X2', 'O2.5', 'U2.5']
+const ODDS_GROUP_START_LABELS = new Set(['1X', 'O2.5'])
+const BET_TOOLTIP_BY_LABEL: Record<string, string> = {
+  '1': 'Home win in regular time.',
+  X: 'Draw in regular time.',
+  '2': 'Away win in regular time.',
+  '1X': 'Double chance: home win or draw.',
+  '12': 'Double chance: either team wins, draw loses.',
+  X2: 'Double chance: draw or away win.',
+  'O2.5': 'Over 2.5 total goals, 3 or more goals needed.',
+  'U2.5': 'Under 2.5 total goals, 2 or fewer goals needed.',
+}
 
 export const OddsBoardHeader = () => {
   return (
@@ -17,14 +29,26 @@ export const OddsBoardHeader = () => {
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        {ODDS_COLUMN_LABELS.map((label) => (
-          <span
-            key={label}
-            className={`w-[58px] text-center ${ODDS_GROUP_START_LABELS.has(label) ? 'mx-1 pl-1' : ''}`}
-          >
-            {label}
-          </span>
-        ))}
+        {ODDS_COLUMN_LABELS.map((label) => {
+          const labelNode = (
+            <span
+              key={label}
+              className={`w-[58px] text-center ${ODDS_GROUP_START_LABELS.has(label) ? 'mx-1 pl-1' : ''} ${
+                BET_TOOLTIP_BY_LABEL[label] ? 'cursor-help' : ''
+              }`}
+            >
+              {label}
+            </span>
+          )
+
+          if (!BET_TOOLTIP_BY_LABEL[label]) return labelNode
+
+          return (
+            <Tooltip key={label} content={BET_TOOLTIP_BY_LABEL[label]}>
+              {labelNode}
+            </Tooltip>
+          )
+        })}
       </div>
     </header>
   )

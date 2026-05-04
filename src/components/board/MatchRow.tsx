@@ -3,14 +3,14 @@ import type { CSSProperties } from 'react'
 import { LiveChip } from '@/components/board/LiveChip'
 import { OddsButton } from '@/components/board/OddsButton'
 import { Panel } from '@/components/common/Panel'
-import type { Match, OddsDirection } from '@/types/odds'
+import type { Match, OddsDirection, OutcomeGroupId, OutcomeId } from '@/types/odds'
 
 interface MatchRowProps {
   match: Match
   selectedKeys: Set<string>
-  toSelectionKey: (matchId: string, marketId: string, outcomeId: string) => string
-  onToggle: (matchId: string, marketId: string, outcomeId: string) => void
-  getFlashDirection: (matchId: string, marketId: string, outcomeId: string) => OddsDirection | null
+  toSelectionKey: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => string
+  onToggle: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => void
+  getFlashDirection: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => OddsDirection | null
   isLastRow?: boolean
   style?: CSSProperties
 }
@@ -21,7 +21,7 @@ const formatTime = (iso: string) =>
     minute: '2-digit',
   })
 
-const ODDS_GROUP_START_LABELS = new Set(['1X', 'Over'])
+const ODDS_GROUP_START_LABELS = new Set(['1X', 'O2.5'])
 
 export const MatchRow = ({
   match,
@@ -32,9 +32,7 @@ export const MatchRow = ({
   getFlashDirection,
   isLastRow = false,
 }: MatchRowProps) => {
-  const oddsColumns = match.markets.flatMap((market) =>
-    market.outcomes.map((outcome) => ({ market, outcome })),
-  )
+  const oddsColumns = match.outcomes
 
   return (
     <div
@@ -69,14 +67,14 @@ export const MatchRow = ({
         </div>
 
         <div className="mt-2 grid grid-cols-2 gap-1">
-          {oddsColumns.map(({ market, outcome }) => (
-            <div key={outcome.id}>
+          {oddsColumns.map((outcome) => (
+            <div key={`${outcome.groupId}:${outcome.outcomeId}`}>
               <OddsButton
-                label={outcome.label}
+                label={outcome.outcomeId}
                 odds={outcome.odds}
-                selected={selectedKeys.has(toSelectionKey(match.id, market.id, outcome.id))}
-                flashDirection={getFlashDirection(match.id, market.id, outcome.id)}
-                onClick={() => onToggle(match.id, market.id, outcome.id)}
+                selected={selectedKeys.has(toSelectionKey(match.id, outcome.groupId, outcome.outcomeId))}
+                flashDirection={getFlashDirection(match.id, outcome.groupId, outcome.outcomeId)}
+                onClick={() => onToggle(match.id, outcome.groupId, outcome.outcomeId)}
                 className="w-full px-1.5 py-1 text-[12px]"
               />
             </div>
@@ -122,17 +120,17 @@ export const MatchRow = ({
         </div>
 
         <div className="ml-auto flex items-center gap-1">
-          {oddsColumns.map(({ market, outcome }) => (
+          {oddsColumns.map((outcome) => (
             <div
-              key={outcome.id}
-              className={`w-[58px] ${ODDS_GROUP_START_LABELS.has(outcome.label) ? 'mx-1 border-l border-[#30363d] pl-1' : ''}`}
+              key={`${outcome.groupId}:${outcome.outcomeId}`}
+              className={`w-[58px] ${ODDS_GROUP_START_LABELS.has(outcome.outcomeId) ? 'mx-1 border-l border-[#30363d] pl-1' : ''}`}
             >
               <OddsButton
-                label={outcome.label}
+                label={outcome.outcomeId}
                 odds={outcome.odds}
-                selected={selectedKeys.has(toSelectionKey(match.id, market.id, outcome.id))}
-                flashDirection={getFlashDirection(match.id, market.id, outcome.id)}
-                onClick={() => onToggle(match.id, market.id, outcome.id)}
+                selected={selectedKeys.has(toSelectionKey(match.id, outcome.groupId, outcome.outcomeId))}
+                flashDirection={getFlashDirection(match.id, outcome.groupId, outcome.outcomeId)}
+                onClick={() => onToggle(match.id, outcome.groupId, outcome.outcomeId)}
               />
             </div>
           ))}

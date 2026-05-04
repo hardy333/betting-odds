@@ -1,47 +1,38 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 import { MatchRow } from '@/components/board/MatchRow'
 import { OddsBoardHeader } from '@/components/board/OddsBoardHeader'
 import { Panel } from '@/components/common/Panel'
 import { appConfig } from '@/config/appConfig'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { usePersistentScroll } from '@/hooks/usePersistentScroll'
-import type { Match, OddsDirection } from '@/types/odds'
+import type { Match, OddsDirection, OutcomeGroupId, OutcomeId } from '@/types/odds'
 
 interface OddsBoardProps {
-  matches: Match[]
+  matchIds: string[]
+  matchesById: Record<string, Match>
   selectedKeys: Set<string>
-  onToggle: (matchId: string, marketId: string, outcomeId: string) => void
-  getFlashDirection: (matchId: string, marketId: string, outcomeId: string) => OddsDirection | null
-  toSelectionKey: (matchId: string, marketId: string, outcomeId: string) => string
+  onToggle: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => void
+  getFlashDirection: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => OddsDirection | null
+  toSelectionKey: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => string
 }
 
 export const OddsBoard = ({
-  matches,
+  matchIds,
+  matchesById,
   selectedKeys,
   onToggle,
   getFlashDirection,
   toSelectionKey,
 }: OddsBoardProps) => {
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false,
-  )
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
-    const handleMobileChange = (event: MediaQueryListEvent) => setIsMobile(event.matches)
-    mediaQuery.addEventListener('change', handleMobileChange)
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleMobileChange)
-    }
-  }, [])
+  const isMobile = useMediaQuery(`(max-width: ${appConfig.viewport.mobileMaxWidthPx}px)`)
 
   usePersistentScroll(scrollRef)
 
   const virtualizer = useVirtualizer({
-    count: matches.length,
+    count: matchIds.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => (isMobile ? 300 : appConfig.oddsBoard.rowHeightPx),
     overscan: appConfig.oddsBoard.overscanRows,
@@ -63,7 +54,9 @@ export const OddsBoard = ({
           style={{ height: `${virtualizer.getTotalSize()}px` }}
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
-            const match = matches[virtualRow.index]
+            const matchId = matchIds[virtualRow.index]
+            if (!matchId) return null
+            const match = matchesById[matchId]
             if (!match) return null
 
             return (
@@ -74,7 +67,7 @@ export const OddsBoard = ({
                 toSelectionKey={toSelectionKey}
                 onToggle={onToggle}
                 getFlashDirection={getFlashDirection}
-                isLastRow={virtualRow.index === matches.length - 1}
+                isLastRow={virtualRow.index === matchIds.length - 1}
                 style={{
                   position: 'absolute',
                   top: 0,
