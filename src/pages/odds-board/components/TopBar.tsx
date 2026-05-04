@@ -33,14 +33,7 @@ export const TopBar = ({ selectedCount, totalMatches, isLoading, onOpenMobileBet
         </motion.h1>
       </div>
       <div className="flex items-center gap-2">
-        <Button
-          variant="surface"
-          size="sm"
-          className="h-7 min-h-7 rounded-full px-2.5 normal-case tracking-normal md:hidden"
-          onClick={onOpenMobileBetTicket}
-        >
-          🎟️ Bets
-        </Button>
+
         <Chip tone="neutral" className="px-3 py-1 text-[12px]">
           {isLoading ? (
             <>
@@ -51,6 +44,14 @@ export const TopBar = ({ selectedCount, totalMatches, isLoading, onOpenMobileBet
             `${formatNumberWithCommas(totalMatches, 0)} Matches`
           )}
         </Chip>
+        <Button
+          variant="surface"
+          size="sm"
+          className="h-7 min-h-7 rounded-full px-2.5 normal-case tracking-normal md:hidden"
+          onClick={onOpenMobileBetTicket}
+        >
+          🎟️
+        </Button>
         <div className="hidden md:block">
           <Chip tone="gold" className="border-[#f7c948]/70 bg-[#f7c948]/25 px-3 py-1 text-[12px]">
             {isLoading ? (

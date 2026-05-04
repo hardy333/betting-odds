@@ -4,12 +4,12 @@ export const appConfig = {
   },
   oddsBoard: {
     rowHeightPx: 62,
-    overscanRows: 20,
+    overscanRows: 10,
     defaultTotalMatches: 12_000,
     defaultSeed: 2026,
   },
   socket: {
-    intervalMs: 4500,
+    intervalMs: 400,
     updatesPerTick: 2000,
   },
   api: {
@@ -17,7 +17,7 @@ export const appConfig = {
     initialMatchesMaxDelayMs: 400,
   },
   flash: {
-    durationMs: 3000,
+    durationMs: 1000,
   },
   sidebar: {
     topHeaderHeightRem: 4,

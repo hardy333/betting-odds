@@ -31,6 +31,18 @@ React + TypeScript odds board built for large datasets, live odds movement, and 
 - Tests + CI checks
 - i18n support
 
+## App Config
+
+Runtime tuning values are centralized in `src/config/appConfig.ts`.
+
+- `oddsBoard`: virtualized row sizing, overscan, and default dataset size/seed
+- `socket`: mock odds update speed and batch size
+- `api`: simulated initial-load delay range
+- `flash`: odds up/down highlight duration
+- `sidebar` and `viewport`: responsive breakpoints and ticket panel sizing
+
+Adjust these values to control performance and UX behavior without changing feature logic.
+
 ## Setup
 
 ```bash
