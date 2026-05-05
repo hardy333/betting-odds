@@ -13,7 +13,7 @@ export interface BetTicketItem {
 }
 
 interface UseBetTicketItemsParams {
-  matchesById: Record<string, Match>
+  matches: Match[]
   selectedOdds: SelectedOddMap
   getFlashDirection: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => OddsDirection | null
 }
@@ -25,7 +25,7 @@ const OUTCOME_GROUP_LABELS: Record<OutcomeGroupId, string> = {
 }
 
 export const useBetTicketItems = ({
-  matchesById,
+  matches,
   selectedOdds,
   getFlashDirection,
 }: UseBetTicketItemsParams) => {
@@ -34,7 +34,7 @@ export const useBetTicketItems = ({
 
     return selectedEntries
       .map(([key, selected]) => {
-        const match = matchesById[selected.matchId]
+        const match = matches.find((item) => item.id === selected.matchId)
         const outcome = match?.outcomes.find((item) => item.outcomeId === selected.outcomeId)
         if (!match || !outcome) return null
 
@@ -48,5 +48,5 @@ export const useBetTicketItems = ({
         }
       })
       .filter((item): item is BetTicketItem => !!item)
-  }, [getFlashDirection, matchesById, selectedOdds])
+  }, [getFlashDirection, matches, selectedOdds])
 }

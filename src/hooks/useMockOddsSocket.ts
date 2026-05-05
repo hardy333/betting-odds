@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { appConfig } from '@/config/appConfig'
 import type { Match, OddsUpdate } from '@/types/odds'
@@ -9,36 +9,79 @@ const randomInt = (maxExclusive: number) => Math.floor(Math.random() * maxExclus
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 interface UseMockOddsSocketProps {
-  matchIds: string[]
-  matchesById: Record<string, Match>
+  matches: Match[]
   intervalMs?: number
   updatesPerTick?: number
   onOddsUpdate: (updates: OddsUpdate[]) => void
 }
 
+type TotalOutcomeIndices = {
+  overIndex: number
+  underIndex: number
+}
+
+const buildTotalOutcomeIndex = (matches: Match[]) => {
+  const map = new Map<string, TotalOutcomeIndices>()
+
+  matches.forEach((match) => {
+    let overIndex = -1
+    let underIndex = -1
+
+    match.outcomes.forEach((outcome, index) => {
+      if (outcome.groupId !== 'TOTAL') return
+      if (outcome.outcomeId === 'O2.5') overIndex = index
+      if (outcome.outcomeId === 'U2.5') underIndex = index
+    })
+
+    if (overIndex !== -1 && underIndex !== -1) {
+      map.set(match.id, { overIndex, underIndex })
+    }
+  })
+
+  return map
+}
+
 export const useMockOddsSocket = ({
-  matchIds,
-  matchesById,
+  matches,
   onOddsUpdate,
   intervalMs = appConfig.socket.intervalMs,
   updatesPerTick = appConfig.socket.updatesPerTick,
 }: UseMockOddsSocketProps) => {
-  useEffect(() => {
-    if (matchIds.length === 0) return
+  const matchesRef = useRef(matches)
+  const onOddsUpdateRef = useRef(onOddsUpdate)
+  const totalOutcomeIndexRef = useRef<Map<string, TotalOutcomeIndices>>(buildTotalOutcomeIndex(matches))
+  const datasetSignatureRef = useRef(`${matches.length}:${matches[0]?.id ?? ''}:${matches[matches.length - 1]?.id ?? ''}`)
 
+  useEffect(() => {
+    matchesRef.current = matches
+    onOddsUpdateRef.current = onOddsUpdate
+
+    const nextSignature = `${matches.length}:${matches[0]?.id ?? ''}:${matches[matches.length - 1]?.id ?? ''}`
+    if (datasetSignatureRef.current !== nextSignature) {
+      totalOutcomeIndexRef.current = buildTotalOutcomeIndex(matches)
+      datasetSignatureRef.current = nextSignature
+    }
+  }, [matches, onOddsUpdate])
+
+  useEffect(() => {
     const interval = window.setInterval(() => {
+      const currentMatches = matchesRef.current
+      if (currentMatches.length === 0) return
+
       const updates: OddsUpdate[] = []
+      const totalOutcomeIndex = totalOutcomeIndexRef.current
 
       for (let i = 0; i < updatesPerTick; i += 1) {
-        const matchId = matchIds[randomInt(matchIds.length)]
-        const match = matchesById[matchId]
+        const match = currentMatches[randomInt(currentMatches.length)]
         if (!match) continue
+
         const outcome = match.outcomes[randomInt(match.outcomes.length)]
+        if (!outcome) continue
 
         if (outcome.groupId === 'TOTAL') {
-          const totalOutcomes = match.outcomes.filter((item) => item.groupId === 'TOTAL')
-          const overOutcome = totalOutcomes.find((item) => item.outcomeId === 'O2.5')
-          const underOutcome = totalOutcomes.find((item) => item.outcomeId === 'U2.5')
+          const totalIndices = totalOutcomeIndex.get(match.id)
+          const overOutcome = totalIndices ? match.outcomes[totalIndices.overIndex] : undefined
+          const underOutcome = totalIndices ? match.outcomes[totalIndices.underIndex] : undefined
 
           if (overOutcome && underOutcome) {
             const impliedOver = 1 / overOutcome.odds
@@ -79,11 +122,11 @@ export const useMockOddsSocket = ({
         })
       }
 
-      onOddsUpdate(updates)
+      onOddsUpdateRef.current(updates)
     }, intervalMs)
 
     return () => {
       window.clearInterval(interval)
     }
-  }, [intervalMs, matchIds, matchesById, onOddsUpdate, updatesPerTick])
+  }, [intervalMs, updatesPerTick])
 }

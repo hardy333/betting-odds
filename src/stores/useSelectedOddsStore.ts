@@ -24,7 +24,6 @@ export const useSelectedOddsStore = create<SelectedOddsStore>()(
           if (next[key]) {
             delete next[key]
           } else {
-            // Keep one active outcome per match+groupId (mutually exclusive group selection).
             Object.entries(next).forEach(([selectedKey, selectedValue]) => {
               if (selectedValue.matchId === matchId && selectedValue.groupId === groupId) {
                 delete next[selectedKey]

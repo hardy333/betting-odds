@@ -10,8 +10,7 @@ import { usePersistentScroll } from '@/hooks/usePersistentScroll'
 import type { Match, OddsDirection, OutcomeGroupId, OutcomeId } from '@/types/odds'
 
 interface OddsBoardProps {
-  matchIds: string[]
-  matchesById: Record<string, Match>
+  matches: Match[]
   selectedKeys: Set<string>
   onToggle: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => void
   getFlashDirection: (matchId: string, groupId: OutcomeGroupId, outcomeId: OutcomeId) => OddsDirection | null
@@ -19,8 +18,7 @@ interface OddsBoardProps {
 }
 
 export const OddsBoard = ({
-  matchIds,
-  matchesById,
+  matches,
   selectedKeys,
   onToggle,
   getFlashDirection,
@@ -32,7 +30,7 @@ export const OddsBoard = ({
   usePersistentScroll(scrollRef)
 
   const virtualizer = useVirtualizer({
-    count: matchIds.length,
+    count: matches.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => (isMobile ? 300 : appConfig.oddsBoard.rowHeightPx),
     overscan: appConfig.oddsBoard.overscanRows,
@@ -54,9 +52,7 @@ export const OddsBoard = ({
           style={{ height: `${virtualizer.getTotalSize()}px` }}
         >
           {virtualizer.getVirtualItems().map((virtualRow) => {
-            const matchId = matchIds[virtualRow.index]
-            if (!matchId) return null
-            const match = matchesById[matchId]
+            const match = matches[virtualRow.index]
             if (!match) return null
 
             return (
@@ -67,7 +63,7 @@ export const OddsBoard = ({
                 toSelectionKey={toSelectionKey}
                 onToggle={onToggle}
                 getFlashDirection={getFlashDirection}
-                isLastRow={virtualRow.index === matchIds.length - 1}
+                isLastRow={virtualRow.index === matches.length - 1}
                 style={{
                   position: 'absolute',
                   top: 0,

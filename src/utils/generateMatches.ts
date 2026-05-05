@@ -95,7 +95,7 @@ const totalOddsFromState = ({
 }) => {
   const fairFullTimeLambda = randomRange(rand, 2.1, 3.2)
   const goalsNeededForOver = Math.floor(TOTAL_GOALS_LINE) + 1 - totalGoalsScored
-  let overProbability = 0
+  let overProbability: number
 
   if (goalsNeededForOver <= 0) {
     overProbability = 0.995
@@ -148,6 +148,8 @@ export const generateMatches = (count: number, seed = 1001): Match[] => {
   for (let i = 0; i < count; i += 1) {
     const id = `match-${i + 1}`
     const sportMeta = SPORTS[i % SPORTS.length]
+    if (!sportMeta) continue
+
     const minute = randomInt(rand, 1, 90)
     const startOffsetMs = randomInt(rand, -70, 15) * 60_000
     const startTime = new Date(now + startOffsetMs).toISOString()

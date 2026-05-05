@@ -1,13 +1,27 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { appConfig } from '@/config/appConfig'
 import { useMockOddsSocket } from '@/hooks/useMockOddsSocket'
 import { useChangedOddsStore } from '@/stores/useChangedOddsStore'
-import { useMatchStore } from '@/stores/useMatchStore'
 import { useSelectedOddsStore } from '@/stores/useSelectedOddsStore'
-import type { OddsDirection, OddsUpdate, OutcomeGroupId, OutcomeId } from '@/types/odds'
+import type { Match, OddsDirection, OddsUpdate, OutcomeGroupId, OutcomeId } from '@/types/odds'
 import { generateMatches } from '@/utils/generateMatches'
 import { toSelectionKey } from '@/utils/selectionKey'
+
+type OutcomeLocation = { matchIndex: number; outcomeIndex: number }
+
+const buildOutcomeLocations = (matches: Match[]) => {
+  const map = new Map<string, OutcomeLocation>()
+  matches.forEach((match, matchIndex) => {
+    match.outcomes.forEach((outcome, outcomeIndex) => {
+      map.set(toSelectionKey(match.id, outcome.groupId, outcome.outcomeId), {
+        matchIndex,
+        outcomeIndex,
+      })
+    })
+  })
+  return map
+}
 
 interface UseOddsBoardOptions {
   totalMatches?: number
@@ -16,35 +30,68 @@ interface UseOddsBoardOptions {
 
 export const useOddsBoard = ({
   totalMatches = appConfig.oddsBoard.defaultTotalMatches,
-  seed = appConfig.oddsBoard.defaultMatchGenerationSeed,
+  seed = appConfig.oddsBoard.defaultSeed,
 }: UseOddsBoardOptions = {}) => {
+  const [allMatches, setAllMatches] = useState<Match[]>(() => generateMatches(totalMatches, seed))
   const changedOddsMap = useChangedOddsStore((state) => state.changedOddsMap)
   const upsertChangedOdds = useChangedOddsStore((state) => state.upsertChangedOdds)
-  const matchIds = useMatchStore((state) => state.matchIds)
-  const matches = useMatchStore((state) => state.matches)
-  const initializeMatches = useMatchStore((state) => state.initializeMatches)
-  const bulkUpdate = useMatchStore((state) => state.bulkUpdate)
 
   const selectedOdds = useSelectedOddsStore((state) => state.selectedOdds)
   const toggleSelection = useSelectedOddsStore((state) => state.toggleSelection)
-
-  useEffect(() => {
-    initializeMatches(generateMatches(totalMatches, seed))
-  }, [initializeMatches, seed, totalMatches])
+  const [outcomeLocations] = useState(() => buildOutcomeLocations(allMatches))
 
   const applyOddsUpdates = useCallback((updates: OddsUpdate[]) => {
     if (updates.length === 0) return
 
     const now = Date.now()
-    const changedUpdates = bulkUpdate(updates)
-    if (changedUpdates.length > 0) {
-      upsertChangedOdds(changedUpdates, now, appConfig.flash.durationMs)
-    }
-  }, [bulkUpdate, upsertChangedOdds])
+    setAllMatches((previous) => {
+      const next = [...previous]
+      const touchedMatches = new Set<number>()
+      const changedUpdates: Array<{ key: string; direction: OddsDirection }> = []
+
+      updates.forEach((update) => {
+        const key = toSelectionKey(update.matchId, update.groupId, update.outcomeId)
+        const location = outcomeLocations.get(key)
+        if (!location) return
+
+        const { matchIndex, outcomeIndex } = location
+        const currentMatch = touchedMatches.has(matchIndex) ? next[matchIndex] : previous[matchIndex]
+        if (!currentMatch) return
+
+        const current = currentMatch.outcomes[outcomeIndex]
+        if (!current) return
+
+        if (current.odds === update.newOdds) return
+
+        if (!touchedMatches.has(matchIndex)) {
+          next[matchIndex] = { ...currentMatch, outcomes: [...currentMatch.outcomes] }
+          touchedMatches.add(matchIndex)
+        }
+
+        const nextMatch = next[matchIndex]
+        if (!nextMatch) return
+
+        nextMatch.outcomes[outcomeIndex] = {
+          ...current,
+          odds: update.newOdds,
+        }
+
+        changedUpdates.push({
+          key,
+          direction: update.newOdds > current.odds ? 'up' : 'down',
+        })
+      })
+
+      if (changedUpdates.length > 0) {
+        upsertChangedOdds(changedUpdates, now, appConfig.flash.durationMs)
+      }
+
+      return changedUpdates.length > 0 ? next : previous
+    })
+  }, [outcomeLocations, upsertChangedOdds])
 
   useMockOddsSocket({
-    matchIds,
-    matchesById: matches,
+    matches: allMatches,
     onOddsUpdate: applyOddsUpdates,
   })
 
@@ -64,8 +111,7 @@ export const useOddsBoard = ({
   const selectedKeys = useMemo(() => new Set(selectedEntries.map(([key]) => key)), [selectedEntries])
 
   return {
-    matchIds,
-    matchesById: matches,
+    allMatches,
     selectedOdds,
     selectedKeys,
     selectedCount: selectedEntries.length,

@@ -10,8 +10,7 @@ import { useSelectedOddsStore } from '@/stores/useSelectedOddsStore'
 
 export const OddsBoardPage = () => {
   const {
-    matchIds,
-    matchesById,
+    allMatches,
     selectedOdds,
     selectedKeys,
     selectedCount,
@@ -25,7 +24,7 @@ export const OddsBoardPage = () => {
   const setMobileBetTicketOpen = useBetTicketUiStore((state) => state.setMobileBetTicketOpen)
 
   const betTicketItems = useBetTicketItems({
-    matchesById,
+    matches: allMatches,
     selectedOdds,
     getFlashDirection,
   })
@@ -44,8 +43,7 @@ export const OddsBoardPage = () => {
       <main className="flex min-h-0 flex-1 items-stretch gap-0 md:gap-2">
         <div className="min-h-0 min-w-0 flex-1 self-stretch">
           <OddsBoard
-            matchIds={matchIds}
-            matchesById={matchesById}
+            matches={allMatches}
             selectedKeys={selectedKeys}
             onToggle={toggleSelection}
             getFlashDirection={getFlashDirection}

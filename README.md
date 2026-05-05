@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# Betting Odds v2
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript odds board built for large datasets, live odds movement, and fast bet-ticket interaction.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 19, TypeScript, Vite
+- Tailwind CSS 4
+- Zustand
+- Framer Motion
+- `@tanstack/react-virtual`
+- ESLint
 
-## React Compiler
+## Current Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Simulated dataset (`12,000` matches by default)
+- Virtualized odds board for smooth rendering
+- Mock live odds updates with up/down flash indicators
+- Outcome selection and bet ticket sidebar (remove/clear, total odds)
+- Collapsible desktop ticket + mobile drawer ticket
+- Persistent board scroll position
+- Responsive layout
 
-## Expanding the ESLint configuration
+## Planned Improvements
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Real API/WebSocket integration
+- Search, filtering, and sorting
+- Stake input + potential return calculation
+- Bet confirmation and history
+- Better accessibility (keyboard/focus/ARIA)
+- Tests + CI checks
+- i18n support
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Setup
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Run
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+## Build
+
+```bash
+npm run build
+```
+
+This runs `tsc -b` and then creates the Vite production build in `dist/`.
+
+## Preview Build
+
+```bash
+npm run preview
+```
+
+## Linting
+
+```bash
+npm run lint
+npm run lint:fix
+```
+
+`lint:fix` auto-fixes supported issues.
+
+## TypeScript Strict Config
+
+Enabled in both `tsconfig.app.json` and `tsconfig.node.json`:
+
+- `strict`
+- `strictNullChecks`
+- `exactOptionalPropertyTypes`
+- `noUncheckedIndexedAccess`
+- `noImplicitOverride`
+
+This helps catch unsafe nullable access and unchecked index access at compile time.
